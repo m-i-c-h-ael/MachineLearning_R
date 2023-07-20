@@ -1,0 +1,57 @@
+---
+title: "20230720_ML"
+output: html_document
+date: "2023-07-20"
+---
+
+# Exercises for Machine Learning in R
+Part of Datacamp course "Supervised Learning in R: Classification"
+
+```{R}
+setwd('H:/My Drive/learning/20230328_MachinL_R_datacamp')
+```
+
+## KNN
+ You are given images of street signs as vectors of RGB values; classify different kinds of signs
+```{R}
+library('class')
+
+# I/O
+signs= read.csv("H:/My Drive/learning/20230328_MachinL_R_datacamp/knn_traffic_signs.csv")
+#head(signs)
+#str(signs)
+table(signs$sample)  #contains test and training data
+
+#make sure each variable is (roughly on the same scale)
+apply(signs[4:dim(signs)[2]],2,max) # => OK
+
+#use RGB values for classification
+class::knn(train= signs[signs$sample=='train',4:dim(signs)[2]],
+           test= signs[signs$sample=='test',4:dim(signs)[2]],
+           cl= as.factor(signs$sign_type[signs$sample=='train']), k=5)
+
+```
+
+## Naive Bayes
+ You are given information about time (several variables: month, day, daytype, hour, ...) and location; predict the location from time
+```{R}
+library('naivebayes')
+rm(list=ls())
+
+# I/O
+loc= read.csv('locations.csv')
+#head(loc)
+
+# split into training and test-set
+testIdx= sample(x=1:dim(loc)[1],size= floor(dim(loc)[1]/10),replace=FALSE)
+trainIdx= (1:dim(loc)[1])[-testIdx]
+train= loc[trainIdx,]
+test= loc[testIdx,]
+
+# full naive Bayes model
+fullMod= naivebayes::naive_bayes(location ~ ., data=train, laplace=0.01)
+
+#test
+predLoc= predict(fullMod, newdata = test[,-dim(test)[2]]) # w/o column to be predicted
+( accuracy = mean(predLoc == test$location) )
+```
